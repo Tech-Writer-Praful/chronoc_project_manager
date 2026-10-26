@@ -22,6 +22,7 @@ import {
   RolePermissions,
 } from '../types';
 import { calculateMemberWorkloads } from '../utils/analytics';
+import { DEFAULT_AVATARS } from './OnboardingNameModal';
 
 interface TeamAndChatProps {
   members: Member[];
@@ -58,6 +59,7 @@ export const TeamAndChat: React.FC<TeamAndChatProps> = ({
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [newMemberTitle, setNewMemberTitle] = useState('');
   const [newMemberRole, setNewMemberRole] = useState<Role>('member');
+  const [newMemberAvatar, setNewMemberAvatar] = useState<string>(DEFAULT_AVATARS[0].url);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -90,13 +92,14 @@ export const TeamAndChat: React.FC<TeamAndChatProps> = ({
       email: newMemberEmail.trim() || `${newMemberName.toLowerCase().replace(/\s+/g, '.')}@chronos.local`,
       title: newMemberTitle.trim() || 'Team Member',
       role: newMemberRole,
-      avatar: `https://images.unsplash.com/photo-${1530000000000 + Math.floor(Math.random() * 50000)}?auto=format&fit=crop&w=120&h=120&q=80`,
+      avatar: newMemberAvatar || DEFAULT_AVATARS[0].url,
     });
 
     setIsAddMemberOpen(false);
     setNewMemberName('');
     setNewMemberEmail('');
     setNewMemberTitle('');
+    setNewMemberAvatar(DEFAULT_AVATARS[0].url);
   };
 
   const formatMessageTime = (iso: string) => {
@@ -347,19 +350,41 @@ export const TeamAndChat: React.FC<TeamAndChatProps> = ({
                   <option value="member">Member</option>
                   <option value="viewer">Viewer</option>
                 </select>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 px-3 py-2 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800"
-                  >
-                    Save
-                  </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-zinc-500 font-medium">Avatar:</span>
+                  {DEFAULT_AVATARS.map((opt) => (
+                    <button
+                      type="button"
+                      key={opt.id}
+                      onClick={() => setNewMemberAvatar(opt.url)}
+                      className={`relative p-0.5 rounded-full border-2 transition-all ${
+                        newMemberAvatar === opt.url
+                          ? 'border-zinc-900 ring-1 ring-zinc-900 scale-105'
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                      title={opt.label}
+                    >
+                      <img
+                        src={opt.url}
+                        alt={opt.label}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2 sm:col-span-4 justify-end mt-1">
                   <button
                     type="button"
                     onClick={() => setIsAddMemberOpen(false)}
-                    className="px-3 py-2 text-zinc-500 hover:text-zinc-700 text-xs"
+                    className="px-3 py-1.5 text-zinc-500 hover:text-zinc-700 text-xs"
                   >
                     Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-zinc-800"
+                  >
+                    Add Member
                   </button>
                 </div>
               </form>

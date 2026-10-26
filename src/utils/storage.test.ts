@@ -7,7 +7,10 @@ test('getDefaultAppData produces clean tutorial-focused workspace', () => {
   assert.equal(data.version, 3);
   assert.equal(data.spaces.length, 1);
   assert.equal(data.members.length, 1);
+  assert.equal(data.members[0].name, 'Workspace Owner');
+  assert.notEqual(data.members[0].name, 'Praful (You)');
   assert.equal(data.hasDismissedTutorial, false);
+  assert.equal(data.hasOnboardedName, false);
   assert.equal(data.tasks.length, 3);
 });
 

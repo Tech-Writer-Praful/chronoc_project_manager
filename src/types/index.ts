@@ -56,6 +56,7 @@ export interface AppData {
   tasks: Task[];
   chatMessages: ChatMessage[];
   hasDismissedTutorial?: boolean;
+  hasOnboardedName?: boolean;
 }
 
 export interface RolePermissions {

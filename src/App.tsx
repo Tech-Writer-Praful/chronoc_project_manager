@@ -21,6 +21,7 @@ import { TaskModal } from './components/TaskModal';
 import { SpacesModal } from './components/SpacesModal';
 import { BackupModal } from './components/BackupModal';
 import { QuickStartModal } from './components/QuickStartModal';
+import { OnboardingNameModal } from './components/OnboardingNameModal';
 
 export default function App() {
   const [data, setData] = useState<AppData>(() => loadAppData());
@@ -28,8 +29,12 @@ export default function App() {
   const [selectedTaskIdForModal, setSelectedTaskIdForModal] = useState<string | null>(null);
   const [isSpacesModalOpen, setIsSpacesModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
-  const [isQuickStartModalOpen, setIsQuickStartModalOpen] = useState(() => !data.hasDismissedTutorial);
-  const [showQuickStartBanner, setShowQuickStartBanner] = useState(() => !data.hasDismissedTutorial);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState<boolean>(() => !data.hasOnboardedName);
+  const [isProfileEditMode, setIsProfileEditMode] = useState<boolean>(false);
+  const [isQuickStartModalOpen, setIsQuickStartModalOpen] = useState<boolean>(
+    () => Boolean(data.hasOnboardedName && !data.hasDismissedTutorial)
+  );
+  const [showQuickStartBanner, setShowQuickStartBanner] = useState<boolean>(() => !data.hasDismissedTutorial);
 
   // Synchronize state changes to localStorage
   useEffect(() => {
@@ -223,6 +228,52 @@ export default function App() {
     }));
   };
 
+  // --- Profile / Name Onboarding ---
+  const handleSaveProfile = (profile: { name: string; title: string; avatar: string; email?: string }) => {
+    setData((prev) => {
+      const updatedMembers = prev.members.map((m) =>
+        m.id === prev.currentMemberId || m.id === 'mem-1'
+          ? {
+              ...m,
+              name: profile.name,
+              title: profile.title,
+              avatar: profile.avatar,
+              email: profile.email || m.email,
+            }
+          : m
+      );
+
+      const updatedChat = prev.chatMessages.map((msg) =>
+        msg.id === 'chat-welcome'
+          ? {
+              ...msg,
+              content: `Welcome ${profile.name} to your project space! Use this built-in chat to collaborate with your team, share status updates, and reference specific deliverables.`,
+            }
+          : msg
+      );
+
+      return {
+        ...prev,
+        members: updatedMembers,
+        chatMessages: updatedChat,
+        hasOnboardedName: true,
+      };
+    });
+
+    setIsOnboardingModalOpen(false);
+    setIsProfileEditMode(false);
+
+    // Open Quick Start tutorial if not yet seen
+    if (!data.hasDismissedTutorial) {
+      setIsQuickStartModalOpen(true);
+    }
+  };
+
+  const handleOpenProfileModal = () => {
+    setIsProfileEditMode(true);
+    setIsOnboardingModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col text-zinc-900 font-sans selection:bg-zinc-900 selection:text-white">
       {/* Global Minimalist Header Navigation */}
@@ -235,6 +286,7 @@ export default function App() {
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onSelectMember={handleSelectMember}
         onOpenTutorial={() => setIsQuickStartModalOpen(true)}
+        onOpenProfileModal={handleOpenProfileModal}
       />
 
       {/* Main View Port */}
@@ -321,6 +373,15 @@ export default function App() {
         onClose={() => setIsQuickStartModalOpen(false)}
         onStartBlank={handleStartBlank}
         onKeepTutorialTasks={handleKeepTutorialTasks}
+      />
+
+      {/* First-boot Name Onboarding & Profile Customization Modal */}
+      <OnboardingNameModal
+        isOpen={isOnboardingModalOpen}
+        isEditMode={isProfileEditMode}
+        currentMember={currentMember}
+        onSaveProfile={handleSaveProfile}
+        onClose={isProfileEditMode ? () => setIsOnboardingModalOpen(false) : undefined}
       />
     </div>
   );

@@ -5,8 +5,8 @@ const STORAGE_KEY = 'chronos_work_tracker_data_v3';
 
 export const INITIAL_USER: Member = {
   id: 'mem-1',
-  name: 'Praful (You)',
-  email: 'impraful23@gmail.com',
+  name: 'Workspace Owner',
+  email: 'owner@workspace.local',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80',
   role: 'admin',
   title: 'Workspace Owner & Admin',
@@ -84,6 +84,7 @@ export function getDefaultAppData(): AppData {
     tasks: TUTORIAL_TASKS,
     chatMessages: TUTORIAL_CHAT,
     hasDismissedTutorial: false,
+    hasOnboardedName: false,
   };
 }
 
@@ -97,6 +98,7 @@ export function getFreshBlankAppData(): AppData {
     tasks: [],
     chatMessages: [],
     hasDismissedTutorial: true,
+    hasOnboardedName: false,
   };
 }
 
@@ -118,15 +120,30 @@ export function loadAppData(): AppData {
       return fallback;
     }
 
+    // Clean any prior default hardcoded Praful name from old storage versions
+    const cleanedMembers = Array.isArray(parsed.members) && parsed.members.length > 0
+      ? parsed.members.map((m) =>
+          m.id === 'mem-1' && m.name === 'Praful (You)'
+            ? { ...m, name: 'Workspace Owner', email: 'owner@workspace.local' }
+            : m
+        )
+      : [INITIAL_USER];
+
+    const hasCompletedNameOnboarding =
+      parsed.hasOnboardedName === true &&
+      cleanedMembers[0]?.name !== 'Praful (You)' &&
+      cleanedMembers[0]?.name !== 'Workspace Owner';
+
     return {
       version: parsed.version || 3,
       currentSpaceId: parsed.currentSpaceId || INITIAL_SPACE.id,
       currentMemberId: parsed.currentMemberId || INITIAL_USER.id,
       spaces: Array.isArray(parsed.spaces) && parsed.spaces.length > 0 ? parsed.spaces : [INITIAL_SPACE],
-      members: Array.isArray(parsed.members) && parsed.members.length > 0 ? parsed.members : [INITIAL_USER],
+      members: cleanedMembers,
       tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
       chatMessages: Array.isArray(parsed.chatMessages) ? parsed.chatMessages : [],
       hasDismissedTutorial: parsed.hasDismissedTutorial ?? false,
+      hasOnboardedName: hasCompletedNameOnboarding,
     };
   } catch (err) {
     console.error('Failed to load local storage data, resetting to defaults:', err);

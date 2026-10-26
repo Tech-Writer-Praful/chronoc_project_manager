@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Check,
   Compass,
+  User,
 } from 'lucide-react';
 import { AppData, Role } from '../types';
 
@@ -21,6 +22,7 @@ interface NavbarProps {
   onOpenBackupModal: () => void;
   onSelectMember: (memberId: string) => void;
   onOpenTutorial: () => void;
+  onOpenProfileModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -32,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBackupModal,
   onSelectMember,
   onOpenTutorial,
+  onOpenProfileModal,
 }) => {
   const [spacesDropdownOpen, setSpacesDropdownOpen] = useState(false);
   const [membersDropdownOpen, setMembersDropdownOpen] = useState(false);
@@ -265,6 +268,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                         </div>
                       </button>
                     ))}
+                    <div className="border-t border-zinc-100 my-1" />
+                    <button
+                      onClick={() => {
+                        setMembersDropdownOpen(false);
+                        onOpenProfileModal();
+                      }}
+                      className="w-full flex items-center gap-2 px-3.5 py-2 text-xs text-zinc-800 hover:bg-zinc-50 font-medium transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-zinc-500" />
+                      <span>Edit Your Profile & Name</span>
+                    </button>
                   </div>
                 </>
               )}
