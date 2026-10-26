@@ -1,0 +1,6 @@
+{
+  "name": "Chronos - Minimalist Work & Time Tracker",
+  "description": "Minimalist Kanban board with granular time tracking, project-duration burn-up and burn-down charts, team spaces, role-based access control, and local offline-first storage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
